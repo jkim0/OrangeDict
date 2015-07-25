@@ -1,0 +1,53 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.loyid.orangedict.EditWordActivityFragment">
+
+    <EditText android:id="@+id/edittext_word"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_input_word"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView android:id="@+id/label_mean_group"
+        android:text="@string/label_mean_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/edittext_word"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
+
+    <Button android:id="@+id/add_button"
+        android:text="@string/label_add_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"/>
+
+    <ScrollView
+        android:id="@+id/scrollview_mean_group"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/label_mean_group"
+        android:layout_above="@id/add_button">
+
+        <LinearLayout android:id="@+id/mean_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include android:id="@+id/mean_item_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                layout="@layout/mean_item_container" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</RelativeLayout>

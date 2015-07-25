@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="type_name_array">
+        <item>@string/type_noun</item>
+        <item>@string/type_verb</item>
+        <item>@string/type_adjective</item>
+        <item>@string/type_adverb</item>
+        <item>@string/type_postposition</item>
+        <item>@string/type_idiom</item>
+    </string-array>
+
+</resources>

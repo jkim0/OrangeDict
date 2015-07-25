@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">OrangeDict</string>
+    <string name="hello_world">Hello world!</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="action_add">Add</string>
+    <string name="action_search">Search</string>
+    <string name="action_test">Test</string>
+    <string name="action_save">Save</string>
+
+    <string name="title_activity_edit_word">Edit</string>
+    <string name="title_activity_view_world">Means</string>
+
+    <string name="label_mean_group">Means</string>
+    <string name="hint_input_word">Input word</string>
+    <string name="hint_input_mean">Input mean</string>
+
+    <string name="label_type">Type</string>
+    <string name="label_add_button">Add item</string>
+    <string name="type_noun">Noun</string>
+    <string name="type_verb">Verb</string>
+    <string name="type_adjective">Adjective</string>
+    <string name="type_adverb">Adverb</string>
+    <string name="type_postposition">Postposition</string>
+    <string name="type_idiom">Idiom</string>
+</resources>
