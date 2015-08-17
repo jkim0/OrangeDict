@@ -29,6 +29,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.loyid.orangedict.MainActivity" />
         </activity>
+
+        <provider
+            android:name=".database.OrangeDictProvider"
+            android:authorities="com.loyid.orangedict.provider"
+            android:enabled="true"
+            android:exported="true" >
+        </provider>
     </application>
 
 </manifest>

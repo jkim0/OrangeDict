@@ -34,10 +34,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //addNewWord();
-                Intent intent = new Intent(MainActivity.this, ViewWordActivity.class);
-                //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                addNewWord();
             }
         });
 
