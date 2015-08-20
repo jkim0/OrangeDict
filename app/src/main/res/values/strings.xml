@@ -26,4 +26,6 @@
     <string name="type_idiom">Idiom</string>
 
     <string name="grammar_list_empty">There is no grammars.</string>
+
+    <string name="msg_duplicated_word_in_db">There are duplicated word in the db. Do you want to load it?</string>
 </resources>

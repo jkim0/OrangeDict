@@ -1,24 +1,36 @@
 package com.loyid.orangedict;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Intent;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
+import android.widget.FilterQueryProvider;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -29,18 +41,22 @@ import com.loyid.orangedict.util.Utils;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class EditWordActivityFragment extends Fragment {
+public class EditWordActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = EditWordActivityFragment.class.getSimpleName();
     private static final boolean DEBUG = true;
 
-    private EditText mEditTextWord = null;
+    private AutoCompleteTextView mEditTextWord = null;
     private LinearLayout mMeanContainer = null;
     private ScrollView mScrollViewGroup = null;
+
+    private SimpleCursorAdapter mAdapter;
 
     private long mInitGrammarId = -1;
     private String mInitGrammar = null;
 
     private String mOldGrammar = null;
+
+    private static final int GRAMMAR_LOADER = 0;
 
     public EditWordActivityFragment() {
     }
@@ -49,19 +65,32 @@ public class EditWordActivityFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-    }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
         Bundle arg = getArguments();
         if (arg != null) {
             mInitGrammarId = getArguments().getLong("grammar_id", -1);
             mInitGrammar = getArguments().getString("grammar", null);
+        }
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(GRAMMAR_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
+
+        AppCompatActivity activity = (AppCompatActivity)getActivity();
+        Toolbar toolbar = (Toolbar)getView().findViewById(R.id.toolbar);
+        if (inSingleActivity()) {
+            activity.setSupportActionBar(toolbar);
+            activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         } else {
-            Intent intent = getActivity().getIntent();
-            mInitGrammarId = intent.getLongExtra("grammar_id", -1);
-            mInitGrammar = intent.getStringExtra("grammar");
+            // this is two-pane mode
+            if (toolbar != null) {
+                Menu menu = toolbar.getMenu();
+                if (menu != null) menu.clear();
+                toolbar.inflateMenu(R.menu.menu_view_word);
+                //finishCreatingMenu(toolbar.getMenu());
+            }
         }
     }
 
@@ -70,15 +99,39 @@ public class EditWordActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         RelativeLayout rl = (RelativeLayout)inflater.inflate(R.layout.fragment_edit_word, container, false);
 
-        mEditTextWord = (EditText)rl.findViewById(R.id.edittext_word);
+        mEditTextWord = (AutoCompleteTextView)rl.findViewById(R.id.edittext_word);
         mMeanContainer = (LinearLayout)rl.findViewById(R.id.mean_container);
         mScrollViewGroup = (ScrollView)rl.findViewById(R.id.scrollview_mean_group);
+
+        mAdapter = new SimpleCursorAdapter(getActivity(), android.R.layout.simple_dropdown_item_1line,
+                null, new String[] { ProviderContract.Grammars.COLUMN_NAME_GRAMMAR },
+                new int[] { android.R.id.text1 }, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+        mEditTextWord.setAdapter(mAdapter);
+        mAdapter.setStringConversionColumn(1);
+        mAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+            @Override
+            public Cursor runQuery(CharSequence constraint) {
+                String partialValue = constraint.toString().toUpperCase();
+                String projection[] = {
+                        ProviderContract.Grammars._ID,
+                        ProviderContract.Grammars.COLUMN_NAME_GRAMMAR
+                };
+
+                Cursor cursor = getActivity().getContentResolver().query(ProviderContract.Grammars.CONTENT_URI,
+                        projection,
+                        "UPPER(" + ProviderContract.Grammars.COLUMN_NAME_GRAMMAR + ") GLOB ?",
+                        new String[]{partialValue + "*"},
+                        ProviderContract.Grammars.DEFAULT_SORT_ORDER);
+
+                return cursor;
+            }
+        });
 
         mEditTextWord.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (DEBUG) Log.d(TAG, "Focus changed hasFocus = " + hasFocus);
-                if (!hasFocus) {
+                if (!hasFocus && v.isEnabled()) {
                     checkGrammar();
                 }
             }
@@ -188,6 +241,20 @@ public class EditWordActivityFragment extends Fragment {
         }
     }
 
+    private boolean inSingleActivity() {
+        AppCompatActivity activity = (AppCompatActivity)getActivity();
+        return activity instanceof EditWordActivity;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        AppCompatActivity activity = (AppCompatActivity)getActivity();
+        if (inSingleActivity()) {
+            inflater.inflate(R.menu.menu_edit_word, menu);
+        }
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -243,6 +310,10 @@ public class EditWordActivityFragment extends Fragment {
                     Uri.withAppendedPath(ProviderContract.Grammars.CONTENT_GRAMMAR_ID_URI_BASE, "" + grammarId),
                     values, null, null);
         }
+
+        if (inSingleActivity()) {
+            getActivity().finish();
+        }
     }
 
     private void checkGrammar() {
@@ -257,8 +328,6 @@ public class EditWordActivityFragment extends Fragment {
 
         long grammarId = Utils.getGrammarId(getActivity(), grammar);
         if (grammarId > 0) {
-            // TODO
-            // show dialog that ask to reload data from database to user
             reloadMeaningRows(grammarId);
         } else if (mMeanContainer.getChildCount() <= 0) {
             addMeanItem(0, null);
@@ -299,5 +368,24 @@ public class EditWordActivityFragment extends Fragment {
 
             cursor.close();
         };
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = {
+                ProviderContract.Grammars._ID,
+                ProviderContract.Grammars.COLUMN_NAME_GRAMMAR
+        };
+        return new CursorLoader(getActivity(), ProviderContract.Grammars.CONTENT_URI, projection, null, null, ProviderContract.Grammars.DEFAULT_SORT_ORDER);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        mAdapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mAdapter.swapCursor(null);
     }
 }

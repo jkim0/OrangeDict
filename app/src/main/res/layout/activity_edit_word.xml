@@ -4,16 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-    </android.support.v7.widget.Toolbar>
-
-    <fragment android:id="@+id/fragment"
-        android:name="com.loyid.orangedict.EditWordActivityFragment"
-        tools:layout="@layout/fragment_edit_word"
+    <FrameLayout android:id="@+id/fragment_container"
+        tools:context="com.loyid.orangedict.EditWordActivity"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

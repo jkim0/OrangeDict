@@ -1,39 +1,43 @@
 package com.loyid.orangedict;
 
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 
 public class ViewWordActivity extends AppCompatActivity {
     private static final String TAG = ViewWordActivity.class.getSimpleName();
+    private ViewWordActivityFragment mFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_word);
 
-        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-    }
+        FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.floating_add_button);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mFragment != null) {
+                    mFragment.editGrammar();
+                }
+            }
+        });
 
+        if (savedInstanceState == null) {
+            Bundle arguments = new Bundle();
+            arguments.putLong("grammar_id", getIntent().getLongExtra("grammar_id", -1));
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_view_world, menu);
-        return true;
-    }
+            ViewWordActivityFragment fragment = new ViewWordActivityFragment();
+            mFragment = fragment;
+            fragment.setArguments(arguments);
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return super.onOptionsItemSelected(item);
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, fragment)
+                    .commit();
+        }
     }
 }

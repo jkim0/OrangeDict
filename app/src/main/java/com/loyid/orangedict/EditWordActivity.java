@@ -16,17 +16,18 @@ public class EditWordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_word);
 
-        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
+        if (savedInstanceState == null) {
+            Bundle arguments = new Bundle();
+            arguments.putLong("grammar_id", getIntent().getLongExtra("grammar_id", -1));
+            arguments.putString("grammar", getIntent().getStringExtra("grammar"));
 
+            EditWordActivityFragment fragment = new EditWordActivityFragment();
+            fragment.setArguments(arguments);
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_edit_word, menu);
-        return true;
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, fragment)
+                    .commit();
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.loyid.orangedict;
 
 import android.content.ContentUris;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.v4.app.Fragment;
@@ -8,8 +9,12 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,13 +42,46 @@ public class ViewWordActivityFragment extends Fragment implements LoaderManager.
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        mGrammarId = getArguments().getLong("grammar_id", -1);
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         getLoaderManager().initLoader(GRAMMAR_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
 
-        Log.d(TAG, "onActivityCreated hasGrammarId = " + getActivity().getIntent().hasExtra("grammar_id") + " grammar_id = " + getActivity().getIntent().getLongExtra("grammar_id", -1));
-        mGrammarId = getActivity().getIntent().getLongExtra("grammar_id", -1);
+        AppCompatActivity activity = (AppCompatActivity)getActivity();
+        Toolbar toolbar = (Toolbar)getView().findViewById(R.id.toolbar);
+        if (activity instanceof ViewWordActivity) {
+            activity.setSupportActionBar(toolbar);
+            activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+        } else {
+            // this is two-pane mode
+            if (toolbar != null) {
+                Menu menu = toolbar.getMenu();
+                if (menu != null) menu.clear();
+                toolbar.inflateMenu(R.menu.menu_view_word);
+                finishCreatingMenu(toolbar.getMenu());
+            }
+        }
+    }
+
+    private void finishCreatingMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_delete);
+        item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.action_delete) {
+                    deleteGrammar();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -53,7 +91,17 @@ public class ViewWordActivityFragment extends Fragment implements LoaderManager.
         mGrammar = (TextView)view.findViewById(R.id.textview_word);
         mSummary = (TextView)view.findViewById(R.id.summary_of_meanings);
         mMeanings = (TextView)view.findViewById(R.id.meanings);
+
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        AppCompatActivity activity = (AppCompatActivity)getActivity();
+        if (activity instanceof ViewWordActivity) {
+            inflater.inflate(R.menu.menu_view_word, menu);
+        }
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -131,5 +179,12 @@ public class ViewWordActivityFragment extends Fragment implements LoaderManager.
         int count = getActivity().getContentResolver().delete(ProviderContract.Grammars.CONTENT_URI, whereClause, whereArgs);
         Log.d(TAG, "deleted count = " + count);
         getActivity().finish();
+    }
+
+    public void editGrammar() {
+        Intent intent = new Intent(getActivity(), EditWordActivity.class);
+        intent.putExtra("grammar_id", mGrammarId);
+        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 }
